@@ -27,10 +27,7 @@ from bs4 import BeautifulSoup
 ## find_urls("the internet is awesome #worldwideweb") should return [], empty list
 
 def find_urls(s):
-    if '.com' in string:
-        re.findall() 
-
-
+    return re.findall('http[s]?://.?[^\s]+\..[\S]+', s)
 
 ## PART 2  - Define a function grab_headlines.
 ## INPUT: N/A. No input.
@@ -38,8 +35,14 @@ def find_urls(s):
 ## http://www.michigandaily.com/section/opinion
 
 def grab_headlines():
-    pass
-    #Your code here
+    r = requests.get('http://www.michigandaily.com/section/opinion')
+    soup = BeautifulSoup(r.content, 'html.parser')
+    most_read = soup('ol')[0]   
+    headlines = []
+    for item in most_read.contents: 
+        if item.string != '\n':
+            headlines.append(item.string)
+    return headlines
 
 
 
@@ -55,28 +58,50 @@ def grab_headlines():
 ## requests.get(base_url, headers={'User-Agent': 'SI_CLASS'}) 
 
 def get_umsi_data():
-     if "umsi_titles" in CACHE_DICTION:
-        return CACHE_DICTION["umsi_titles"]
-    else:
-        umsi_titles=[]
-        for a in range(12):
-            requests_text = requests.get(https://www.si.umich.edu/directory?field_person_firstname_value=&field_person_lastname_value=&rid=All, headers={'User-Agent': 'SI_CLASS'})
-            umsi_titles.append(requests_text)
-        CACHE_DICTION['umsi_titles'] = umsi_titles
-        caching_file= open(CACHE_FNAME, 'w')
-        caching_file.write(json.dumps(CACHE_DICTION))
+    start_url = 'https://www.si.umich.edu/directory?field_person_firstname_value=&field_person_lastname_value=&rid=All'
+    url = ''    
+    page = 0    
+    r = requests.get(start_url, headers={'User-Agent': 'SI_CLASS'})
+    soup = BeautifulSoup(r.content, 'html.parser')
+    umsi_titles = {}
+    while page < 13:    
+        soup = BeautifulSoup(r.content, 'html.parser')
+        h2s = soup('h2')    
+        names = []  t
+        titles = [] 
+        titles2 = [] 
+        divs = soup.find_all("div", { "class" : "field-item even" })    #all positions are in a <div> tage with that clas--this retrieves only the div tags with that class attached
+        for div in divs:
+            if div.string != None:  # make sure there is plain text
+                titles.append(div.string)
+        for i in range(len(titles)):
+            if i % 2 != 0:  
+                titles2.append(titles[i])
+        for h2 in h2s[3:len(h2s) - 2]:  # h2 tags also have images, so this makes sure it's not an image before adding it to list names
+            if '.' not in h2.string:
+                names.append(h2.string)
+        i = 0
+        for name in names:  # goes through list of names and sets the key name to the value in the corresponding title from titles2
+            umsi_titles[name] = titles2[i]
+            i += 1  # i keeps track of the index so to add the correct title for each name
+        page += 1   # next page
+        url = start_url + '&amp%3Bfield_person_lastname_value=&amp%3Brid=7&page=' + str(page)   # resets the URL to move to the next page
+        r = requests.get(url, headers={'User-Agent': 'SI_CLASS'})   # send new request with new URL
     return umsi_titles
 
 ## PART 3 (b) Define a function called num_students.  
 ## INPUT: The dictionary from get_umsi_data().
 ## OUTPUT: Return number of PhD students in the data.  (Don't forget, I may change the input data)
 def num_students(data):
-    PhD_Stuents=0
-    for x in umsi_titles:
-        if title is 'PhD Student':
-            PhD_Students +=1
-    return PhD_Students
-    #Your code here
+    c = 0
+    for key in data.keys(): 
+        if data[key] == 'PhD student':  
+            c += 1
+    return cc = 0
+    for key in data.keys(): 
+        if data[key] == 'PhD student': 
+            c += 1
+    return c
 
 
 
