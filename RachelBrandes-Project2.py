@@ -29,20 +29,21 @@ from bs4 import BeautifulSoup
 def find_urls(s):
     return re.findall('http[s]?://.?[^\s]+\..[\S]+', s)
 
+
 ## PART 2  - Define a function grab_headlines.
 ## INPUT: N/A. No input.
 ## Grab the headlines from the "Most Read" section of 
 ## http://www.michigandaily.com/section/opinion
 
 def grab_headlines():
-    r = requests.get('http://www.michigandaily.com/section/opinion')
-    soup = BeautifulSoup(r.content, 'html.parser')
-    most_read = soup('ol')[0]   
-    headlines = []
+    mrheadlines = []
+    rachel = requests.get('http://www.michigandaily.com/section/opinion')
+    beautsoup = BeautifulSoup(rachel.content, 'html.parser')  
+    most_read = beautsoup('ol')[0] 
     for item in most_read.contents: 
         if item.string != '\n':
-            headlines.append(item.string)
-    return headlines
+            mrheadlines.append(item.string)
+    return mrheadlines
 
 
 
@@ -58,50 +59,46 @@ def grab_headlines():
 ## requests.get(base_url, headers={'User-Agent': 'SI_CLASS'}) 
 
 def get_umsi_data():
-    start_url = 'https://www.si.umich.edu/directory?field_person_firstname_value=&field_person_lastname_value=&rid=All'
-    url = ''    
+    grab_url = 'https://www.si.umich.edu/directory?field_person_firstname_value=&field_person_lastname_value=&rid=All'
+    final = ''    
     page = 0    
-    r = requests.get(start_url, headers={'User-Agent': 'SI_CLASS'})
+    r = requests.get(grab_url, headers={'User-Agent': 'SI_CLASS'})
     soup = BeautifulSoup(r.content, 'html.parser')
-    umsi_titles = {}
+    the_titles = {}
     while page < 13:    
-        soup = BeautifulSoup(r.content, 'html.parser')
-        h2s = soup('h2')    
-        names = []  t
+        beautsoup = BeautifulSoup(r.content, 'html.parser')
+        h2s = beautsoup('h2')    
+        names = []  
         titles = [] 
         titles2 = [] 
-        divs = soup.find_all("div", { "class" : "field-item even" })    #all positions are in a <div> tage with that clas--this retrieves only the div tags with that class attached
+        divs = beautsoup.find_all("div", { "class" : "field-item even" })    
         for div in divs:
-            if div.string != None:  # make sure there is plain text
+            if div.string != None:  
                 titles.append(div.string)
         for i in range(len(titles)):
             if i % 2 != 0:  
                 titles2.append(titles[i])
-        for h2 in h2s[3:len(h2s) - 2]:  # h2 tags also have images, so this makes sure it's not an image before adding it to list names
+        for h2 in h2s[3:len(h2s) - 2]:  
             if '.' not in h2.string:
                 names.append(h2.string)
         i = 0
-        for name in names:  # goes through list of names and sets the key name to the value in the corresponding title from titles2
-            umsi_titles[name] = titles2[i]
-            i += 1  # i keeps track of the index so to add the correct title for each name
-        page += 1   # next page
-        url = start_url + '&amp%3Bfield_person_lastname_value=&amp%3Brid=7&page=' + str(page)   # resets the URL to move to the next page
-        r = requests.get(url, headers={'User-Agent': 'SI_CLASS'})   # send new request with new URL
-    return umsi_titles
+        for name in names:  
+            the_titles[name] = titles2[i]
+            i += 1  
+        page += 1   
+        final = grab_url + '&amp%3Bfield_person_lastname_value=&amp%3Brid=7&page=' + str(page)  
+        r = requests.get(final, headers={'User-Agent': 'SI_CLASS'})   
+    return the_titles
 
 ## PART 3 (b) Define a function called num_students.  
 ## INPUT: The dictionary from get_umsi_data().
 ## OUTPUT: Return number of PhD students in the data.  (Don't forget, I may change the input data)
 def num_students(data):
-    c = 0
+    number_students = 0
     for key in data.keys(): 
         if data[key] == 'PhD student':  
-            c += 1
-    return cc = 0
-    for key in data.keys(): 
-        if data[key] == 'PhD student': 
-            c += 1
-    return c
+            number_students += 1
+    return number_students
 
 
 
